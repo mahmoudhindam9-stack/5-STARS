@@ -14,3 +14,6 @@ POS and inventory management system for Five Stars electrical supplies store.
 - User roles: manager, cashier, inventory, accounting
 - JSON backup export/import
 - Local browser storage for the current standalone deployment
+
+## Deployment
+Static frontend deployment on Vercel. No Express server is required.
