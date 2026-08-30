@@ -24,27 +24,35 @@
 </div>
 
 <div id="app" class="app hidden">
-  <aside class="sidebar">
-    <div class="side-brand"><div class="logo small">★</div><div><b>Five Stars</b><small>Electrical Supplies</small></div></div>
+  <header class="app-navbar">
+    <div class="app-nav-brand">
+      <div class="app-logo">★</div>
+      <div class="app-brand-info">
+        <b>Five Stars</b>
+        <small>Electrical Supplies</small>
+      </div>
+    </div>
     <nav class="nav">
-      <button data-page="dashboard">▦ الرئيسية</button>
-      <button data-page="pos" class="active">🛒 الكاشير</button>
-      <button data-page="inventory">📦 المخزن</button>
-      <button data-page="customers">👥 العملاء</button>
-      <button data-page="accounts">💰 الحسابات</button>
-      <button data-page="reports">📊 التقارير</button>
-      <button data-page="users">🔐 المستخدمون</button>
-      <button data-page="settings">⚙️ الإعدادات</button>
+      <button data-page="pos" class="active"><span class="icon">🛒</span> <span class="text">الكاشير</span></button>
+      <button data-page="inventory"><span class="icon">📦</span> <span class="text">المخزن</span></button>
+      <button data-page="suppliers"><span class="icon">🚛</span> <span class="text">الموردين</span></button>
+      <button data-page="customers"><span class="icon">👥</span> <span class="text">العملاء</span></button>
+      <button data-page="accounts"><span class="icon">💰</span> <span class="text">الحسابات</span></button>
+      <button data-page="reports"><span class="icon">📊</span> <span class="text">التقارير</span></button>
+      <button data-page="dashboard"><span class="icon">▦</span> <span class="text">لوحة التحكم</span></button>
+      <button data-page="users"><span class="icon">🔐</span> <span class="text">المستخدمون</span></button>
+      <button data-page="settings"><span class="icon">⚙️</span> <span class="text">الإعدادات</span></button>
     </nav>
-    <div class="side-bottom"><span id="sideUser">admin</span><button class="btn secondary full" onclick="logout()">تسجيل الخروج</button></div>
-  </aside>
+    <div class="app-nav-user">
+      <span class="badge" id="currentUser">غير مسجل</span>
+      <button class="icon-btn" onclick="showHelp()" title="مساعدة">؟</button>
+      <button class="btn secondary app-logout-btn" onclick="logout()" title="تسجيل الخروج"><span>🚪</span> <span class="text">خروج</span></button>
+    </div>
+  </header>
 
   <main class="main">
-    <header class="top">
-      <div><div class="title" id="pageTitle">الكاشير</div><div class="muted">Five Stars لإدارة محل الأدوات الكهربائية</div></div>
-      <div class="top-actions"><span class="badge" id="currentUser">غير مسجل</span><button class="icon-btn" onclick="showHelp()">؟</button></div>
-    </header>
-
+    <div id="pageTitle" class="hidden">الكاشير</div>
+    
     <section id="dashboard" class="page hidden">
       <div class="hero"><div><span class="eyebrow">لوحة التحكم</span><h1>أهلاً بك في Five Stars</h1><p>ملخص سريع لحالة المبيعات والمخزون والعملاء اليوم.</p></div><button class="btn primary" onclick="go('pos')">فتح الكاشير</button></div>
       <div class="cards"><div class="card"><span>مبيعات اليوم</span><b id="dashSales">0 ج</b></div><div class="card"><span>ربح اليوم</span><b id="dashProfit">0 ج</b></div><div class="card"><span>منخفض المخزون</span><b id="dashLow">0</b></div><div class="card"><span>مديونيات العملاء</span><b id="dashDebt">0 ج</b></div></div>
@@ -52,55 +60,207 @@
     </section>
 
     <section id="pos" class="page">
-      <div class="pos-header">
-        <div class="pos-brand"><div class="pos-brand-logo">★</div><div><b>Five Stars</b><span>نقطة البيع للأدوات الكهربائية</span></div></div>
-        <div class="pos-search-wrap"><span>⌕</span><input id="posSearch" class="pos-search" placeholder="ابحث باسم الصنف أو الباركود..."></div>
-        <button class="btn secondary pos-head-btn" onclick="focusBarcode()">ماسح الباركود</button>
-      </div>
-
-      <div class="scanner pos-scanner">
-        <div><b>البيع السريع بالباركود</b><span class="muted">قارئ USB / Bluetooth أو كاميرا الجهاز</span></div>
-        <div class="scanner-row"><input id="posBarcode" class="input pos-barcode" placeholder="امسح الباركود ثم Enter" autofocus><button class="btn secondary" onclick="startCamera('pos')">📷 كاميرا</button></div>
-      </div>
-
-      <div class="pos-canvas">
-        <div class="pos-products-panel">
-          <div class="pos-section-head"><div><h3>الأصناف</h3><span class="muted">اضغط على المنتج لإضافته مباشرة للسلة</span></div><span id="posItemCount" class="badge">0 صنف</span></div>
-          <div id="products" class="products pos-products"></div>
-        </div>
-
-        <aside class="cart-panel pos-cart-panel">
-          <div class="cart-head">
-            <div class="cart-title"><div class="cart-bird">🕊️</div><div><h3>السلة</h3><span id="cartCount" class="badge">0 وحدة</span></div></div>
-            <button class="icon-btn" onclick="clearCart()" title="تفريغ السلة">×</button>
+      <div class="pos-v2-container">
+        <!-- Left Column: Cart Panel (السلة والطلب) -->
+        <aside class="pos-v2-cart-panel">
+          <div class="pos-v2-cart-header">
+            <div class="pos-v2-cart-header-text">
+              <h2 class="pos-v2-cart-title">السلة والطلب</h2>
+              <span id="cartCount" class="pos-v2-cart-subtitle">0 صنف</span>
+            </div>
+            <div class="pos-v2-cart-badge-icon" title="سلة المبيعات">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+            </div>
           </div>
-          <div id="cart" class="pos-cart-lines"></div>
-          <div class="cart-summary">
-            <div class="summary-line"><span>المجموع الفرعي</span><b id="cartSubtotal">0.00 ج</b></div>
-            <div class="summary-fields"><label>خصم<input id="cartDiscount" class="input" type="number" min="0" step="0.01" value="0"></label><label>ضريبة %<input id="cartTax" class="input" type="number" min="0" step="0.01" value="0"></label></div>
-            <div class="summary-line total"><span>الإجمالي</span><strong id="cartTotal">0.00 ج</strong></div>
+
+          <!-- Cart Items Scroll Area -->
+          <div id="cart" class="pos-v2-cart-body">
+            <!-- Rendered by JS: either empty state or list of cart rows -->
+            <div class="pos-v2-cart-empty">
+              <div class="pos-v2-empty-circle">
+                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+              </div>
+              <h4 class="pos-v2-empty-title">سلة المشتريات فارغة</h4>
+              <p class="pos-v2-empty-desc">اضغط على الأصناف لإضافتها</p>
+            </div>
           </div>
-          <div class="customer-box">
-            <label>طريقة الدفع<select id="payment" class="input"><option value="نقدي">نقدي</option><option value="بطاقة">بطاقة</option><option value="آجل">آجل</option></select></label>
-            <label>العميل<select id="customerSelect" class="input"><option value="">عميل نقدي</option></select></label>
+
+          <!-- Advanced Options Toggle Drawer (Payment, Customer, Discount, Tax) -->
+          <div class="pos-v2-cart-options">
+            <details class="pos-v2-details" id="posOptionsDetails" open>
+              <summary class="pos-v2-details-toggle">
+                <span>⚙️ خيارات الفاتورة والدفع والعميل</span>
+                <button type="button" class="pos-v2-clear-btn" onclick="clearCart()" title="تفريغ السلة">مسح السلة</button>
+              </summary>
+              <div class="pos-v2-details-content">
+                <div class="pos-v2-opt-grid">
+                  <label>طريقة الدفع
+                    <select id="payment" class="input">
+                      <option value="نقدي">نقدي</option>
+                      <option value="بطاقة">بطاقة (فيزا / ميزة)</option>
+                      <option value="آجل">آجل (على الحساب)</option>
+                    </select>
+                  </label>
+                  <label>العميل
+                    <div style="display:flex; gap:4px;">
+                      <select id="customerSelect" class="input" style="flex:1" onchange="syncCustomerField(this.value)">
+                        <option value="">عميل نقدي</option>
+                      </select>
+                      <button type="button" class="btn secondary" style="padding: 4px 8px; font-size: 13px;" onclick="quickAddCustomerModal()" title="إضافة عميل جديد">+</button>
+                    </div>
+                  </label>
+                  <div class="wide" style="display:flex; flex-direction:column; gap:3px;">
+                    <label style="font-size:11px; font-weight:700; color:#64748b;">بحث سريع عن عميل بالاسم أو الهاتف:
+                      <input id="posCustomerSearch" class="input" placeholder="اكتب اسم أو رقم هاتف العميل..." oninput="filterPosCustomers(this.value)" autocomplete="off">
+                    </label>
+                  </div>
+                  <label>خصم (ج)
+                    <input id="cartDiscount" class="input" type="number" min="0" step="0.01" value="0" oninput="renderCart()">
+                  </label>
+                  <label>ضريبة %
+                    <input id="cartTax" class="input" type="number" min="0" step="0.01" value="0" oninput="renderCart()">
+                  </label>
+                </div>
+                <div class="action-row" style="margin-top:8px; display:flex; gap:6px;">
+                  <button type="button" class="btn secondary grow" onclick="holdCart()">تعليق البيع</button>
+                  <button type="button" class="btn secondary grow" onclick="restoreCart()">استرجاع</button>
+                </div>
+                <div id="heldSales" class="held"></div>
+              </div>
+            </details>
           </div>
-          <div class="pos-cart-actions">
-            <button class="btn success full" onclick="checkout()">✓ إتمام البيع وطباعة</button>
-            <div class="action-row"><button class="btn secondary grow" onclick="holdCart()">تعليق البيع</button><button class="btn secondary grow" onclick="restoreCart()">استرجاع</button></div>
-            <div id="heldSales" class="held"></div>
+
+          <!-- Bottom Summary & Checkout Button (Matching Image) -->
+          <div class="pos-v2-cart-footer">
+            <div class="pos-v2-total-block">
+              <div class="pos-v2-total-row">
+                <span class="pos-v2-total-label">مجموع الطلبات</span>
+                <span id="cartTotal" class="pos-v2-total-amount">0.00 ج</span>
+              </div>
+              <p class="pos-v2-total-note">يتم احتساب الضريبة والخدمات بعد الضغط على إتمام الطلب</p>
+            </div>
+
+            <button id="posCheckoutBtn" class="pos-v2-checkout-btn" onclick="checkout()">
+              إتمام الطلب • <span id="cartBtnTotal">0.00 ج</span>
+            </button>
           </div>
         </aside>
+
+        <!-- Right Column: Main Showcase (Categories & Products Grid) -->
+        <main class="pos-v2-showcase">
+          <!-- Top Utility & Search / Barcode Bar -->
+          <div class="pos-v2-top-controls">
+            <div class="pos-v2-search-wrapper">
+              <span class="pos-v2-input-icon">🔍</span>
+              <input id="posSearch" class="pos-v2-search-input" placeholder="ابحث عن صنف أو كود... (F8)" autocomplete="off">
+            </div>
+            <div class="pos-v2-barcode-wrapper">
+              <span class="pos-v2-input-icon">🏷️</span>
+              <input id="posBarcode" class="pos-v2-barcode-input" placeholder="مسح الباركود السريع (Enter)" autofocus autocomplete="off">
+              <button class="btn secondary pos-v2-cam-btn" onclick="startCamera('pos')" title="كاميرا مسح الباركود">📷</button>
+            </div>
+          </div>
+
+          <!-- Top Categories Pill Carousel -->
+          <div class="pos-v2-cats-track-wrapper">
+            <button type="button" class="pos-v2-cat-nav-btn" onclick="scrollPosCats(-180)" title="السابق">❯</button>
+            <div id="posCategoryPills" class="pos-v2-cats-container">
+              <!-- Dynamically populated category pills -->
+            </div>
+            <button type="button" class="pos-v2-cat-nav-btn" onclick="scrollPosCats(180)" title="التالي">❮</button>
+          </div>
+
+          <!-- Products Grid Area -->
+          <div class="pos-v2-products-scroll">
+            <div id="products" class="pos-v2-products-grid">
+              <!-- Dynamically populated product cards -->
+            </div>
+          </div>
+        </main>
       </div>
     </section>
 
     <section id="inventory" class="page hidden">
-      <div class="toolbar page-toolbar"><div><h2>المخزن</h2><p class="muted">إدارة الأصناف والأسعار والباركود والكميات والصور.</p></div><button class="btn primary" onclick="focusBarcode()">ماسح الباركود</button></div>
+      <div class="toolbar page-toolbar">
+        <div>
+          <h2>المخزن وإدارة المخزون</h2>
+          <p class="muted">إدارة الأصناف، الجرد والتسوية، الباركود، والطباعة.</p>
+        </div>
+        <div class="actions" style="margin-top:0">
+          <button class="btn primary" onclick="openStocktakeModal()">📋 جرد المخزن</button>
+          <button class="btn secondary" onclick="openQuickAdjustmentModal()">⚖️ تسوية سريعة</button>
+          <button class="btn secondary" onclick="openInventoryPrintModal()">🖨 خيارات الطباعة</button>
+          <button class="btn secondary" onclick="focusBarcode()">📷 ماسح الباركود</button>
+        </div>
+      </div>
       <div class="cards"><div class="card"><span>الأصناف</span><b id="invCount">0</b></div><div class="card"><span>قيمة المخزون</span><b id="stockValue">0 ج</b></div><div class="card"><span>منخفض المخزون</span><b id="lowCount">0</b></div><div class="card"><span>الوحدات المباعة</span><b id="soldCount">0</b></div></div>
       <div class="grid">
-        <div class="panel"><h3 id="formTitle">إضافة صنف</h3><div class="form"><input id="pId" type="hidden"><input id="pName" class="input" placeholder="اسم الصنف"><div class="scan-input"><input id="pBarcode" class="input" placeholder="الباركود — امسحه هنا"><button class="btn secondary" onclick="startCamera('inventory')">📷</button></div><input id="pBuy" class="input" type="number" min="0" step="0.01" placeholder="سعر الشراء"><input id="pSell" class="input" type="number" min="0" step="0.01" placeholder="سعر البيع"><input id="pQty" class="input" type="number" min="0" placeholder="الكمية"><input id="pMin" class="input" type="number" min="0" placeholder="الحد الأدنى"><input id="pUnit" class="input" placeholder="الوحدة: قطعة، متر، بكرة..."><input id="pCat" class="input" placeholder="التصنيف: لمبات، كابلات..."><input id="pImage" class="input wide" placeholder="رابط صورة المنتج (اختياري)"><div class="actions wide"><button class="btn primary grow" onclick="saveProduct()">حفظ الصنف</button><button class="btn secondary" onclick="resetForm()">جديد</button></div></div></div>
-        <div class="panel"><h3>حركة المخزون السريعة</h3><div id="movementsLog" style="max-height:330px;overflow:auto"></div></div>
+        <div class="panel"><h3 id="formTitle">إضافة صنف</h3><div class="form"><input id="pId" type="hidden"><input id="pName" class="input" placeholder="اسم الصنف"><div class="scan-input"><input id="pBarcode" class="input" placeholder="الباركود — امسحه هنا"><button class="btn secondary" onclick="startCamera('inventory')">📷</button></div><input id="pBuy" class="input" type="number" min="0" step="0.01" placeholder="سعر الشراء"><input id="pSell" class="input" type="number" min="0" step="0.01" placeholder="سعر البيع"><input id="pQty" class="input" type="number" min="0" placeholder="الكمية"><input id="pMin" class="input" type="number" min="0" placeholder="الحد الأدنى"><input id="pUnit" class="input" placeholder="الوحدة: قطعة، متر، بكرة..."><div style="display:flex;gap:4px;"><input id="pCat" class="input" list="categoriesDatalist" placeholder="التصنيف (اختر أو اكتب جديد)..." style="flex:1"><button type="button" class="btn secondary" style="padding:4px 8px;font-size:13px;" onclick="quickAddCategoryModal()" title="إضافة تصنيف جديد">+</button></div><datalist id="categoriesDatalist"></datalist><input id="pImage" class="input wide" placeholder="رابط صورة المنتج (اختياري)"><div class="actions wide"><button class="btn primary grow" onclick="saveProduct()">حفظ الصنف</button><button class="btn secondary" onclick="resetForm()">جديد</button></div></div></div>
+        <div class="panel"><h3>حركة المخزون والتسويات</h3><div id="movementsLog" style="max-height:330px;overflow:auto"></div></div>
       </div>
-      <div class="panel" style="margin-top:16px"><h3>سجل المخزون والجرد</h3><input id="invSearch" class="input" placeholder="بحث باسم الصنف أو الباركود..." style="margin:12px 0"><div class="table-wrap"><table class="table"><thead><tr><th>الصنف</th><th>الباركود</th><th>الوحدة</th><th>الكمية</th><th>الشراء</th><th>البيع</th><th>إجراءات</th></tr></thead><tbody id="invTable"></tbody></table></div></div>
+      <div class="panel" style="margin-top:16px"><h3>سجل المخزون والجرد</h3><input id="invSearch" class="input" placeholder="بحث باسم الصنف أو الباركود أو التصنيف..." style="margin:12px 0"><div class="table-wrap"><table class="table"><thead><tr><th>الصنف</th><th>الباركود</th><th>التصنيف</th><th>الوحدة</th><th>الكمية</th><th>الشراء</th><th>البيع</th><th>إجراءات</th></tr></thead><tbody id="invTable"></tbody></table></div></div>
+    </section>
+
+    <section id="suppliers" class="page hidden">
+      <div class="toolbar page-toolbar">
+        <div>
+          <h2>الموردين والشركات</h2>
+          <p class="muted">إدارة الموردين، كشوف الحسابات، المديونيات وسداد الدفعات.</p>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><span>عدد الموردين</span><b id="supCount">0</b></div>
+        <div class="card highlight"><span>مستحقات الموردين (مديونيات)</span><b id="supDebtTotal">0 ج</b></div>
+        <div class="card"><span>إجمالي سدادات الموردين</span><b id="supPaidTotal">0 ج</b></div>
+      </div>
+      <div class="grid">
+        <div class="panel">
+          <h3 id="supFormTitle">إضافة مورد جديد</h3>
+          <div class="form">
+            <input id="sId" type="hidden">
+            <input id="sName" class="input" placeholder="اسم المورد أو المسؤول *">
+            <input id="sCompany" class="input" placeholder="اسم الشركة / المؤسسة">
+            <input id="sPhone" class="input" placeholder="رقم الهاتف">
+            <input id="sBalance" class="input" type="number" min="0" step="0.01" placeholder="الرصيد الافتتاحي (مستحق له)">
+            <input id="sAddress" class="input wide" placeholder="العنوان">
+            <input id="sNotes" class="input wide" placeholder="ملاحظات / البضائع الموردة">
+            <div class="actions wide">
+              <button class="btn primary grow" onclick="saveSupplier()">حفظ المورد</button>
+              <button class="btn secondary" onclick="resetSupplierForm()">جديد</button>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>تسجيل دفعة / سداد لمورد</h3>
+          <div class="form">
+            <select id="paySupplierSelect" class="input wide"><option value="">اختر المورد...</option></select>
+            <input id="supPayAmount" class="input" type="number" min="0" step="0.01" placeholder="المبلغ المسدد *">
+            <input id="supPayNote" class="input" placeholder="رقم الإيصال / بيان السداد">
+            <button class="btn success wide" onclick="recordSupplierPaymentFromForm()">تسجيل السداد والخصم من الحساب</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:16px">
+        <div class="toolbar" style="justify-content:space-between">
+          <h3>سجل وقائمة الموردين</h3>
+          <input id="supSearch" class="input" placeholder="ابحث باسم المورد أو الشركة أو الهاتف..." style="max-width:320px">
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>المورد / المسؤول</th>
+                <th>الشركة</th>
+                <th>الهاتف</th>
+                <th>العنوان</th>
+                <th>المستحق للمورد</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="supTable"></tbody>
+          </table>
+        </div>
+      </div>
     </section>
 
     <section id="customers" class="page hidden"><div class="grid"><div class="panel"><h3>إضافة عميل</h3><div class="form"><input id="cName" class="input" placeholder="اسم العميل"><input id="cPhone" class="input" placeholder="رقم التليفون"><input id="cAddress" class="input wide" placeholder="العنوان"><button class="btn primary wide" onclick="addCustomer()">حفظ العميل</button></div></div><div class="panel"><div class="toolbar"><h3>العملاء</h3><input id="custSearch" class="input" placeholder="ابحث بالاسم أو رقم التليفون..."></div><div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>الهاتف</th><th>الرصيد</th><th>إجراءات</th></tr></thead><tbody id="custTable"></tbody></table></div></div></div></section>
@@ -125,17 +285,93 @@
 <div id="toast" class="toast"></div>
 
 <script>
-function renderProducts(){
-  const root=document.getElementById('products'); if(!root || typeof products==='undefined') return;
-  const q=(document.getElementById('posSearch')?.value||'').trim().toLowerCase();
-  const list=products.filter(p=>`${p.name} ${p.barcode} ${p.cat||''}`.toLowerCase().includes(q));
-  const count=document.getElementById('posItemCount'); if(count) count.textContent=`${list.length} صنف`;
-  root.innerHTML=list.map(p=>{
-    const image=p.image?`<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">`:`<div class="product-placeholder">★</div>`;
-    return `<button class="product-card${p.qty<1?' is-empty':''}" onclick="addCart(${p.id})" ${p.qty<1?'disabled':''}>${image}<div class="product-card-body"><div class="product-name">${esc(p.name)}</div><div class="product-meta"><span>${esc(p.cat||'عام')}</span><b>${money(p.sell)}</b></div><div class="product-stock">${p.qty>0?`المتاح: ${p.qty} ${esc(p.unit)}`:'نفد المخزون'}</div></div></button>`;
-  }).join('')||'<div class="empty">لا توجد أصناف مطابقة للبحث</div>';
+let currentPosCat = 'all';
+
+function setPosCategory(cat) {
+  currentPosCat = cat;
+  renderProducts();
 }
-function saveProduct(){addProduct();}
+
+function scrollPosCats(delta) {
+  const container = document.getElementById('posCategoryPills');
+  if (container) {
+    container.scrollBy({ left: delta, behavior: 'smooth' });
+  }
+}
+
+function renderCategoryPills() {
+  const pillsRoot = document.getElementById('posCategoryPills');
+  if (!pillsRoot || typeof products === 'undefined') return;
+  
+  const allKnownCats = typeof categories !== 'undefined' && Array.isArray(categories) ? categories : [];
+  const rawProductCats = products.map(p => (p.cat || '').trim()).filter(Boolean);
+  const combined = Array.from(new Set([...allKnownCats, ...rawProductCats])).filter(Boolean);
+  const uniqueCats = ['all', ...combined];
+  
+  let html = uniqueCats.map(cat => {
+    const label = cat === 'all' ? 'الكل' : cat;
+    const active = currentPosCat === cat ? ' active' : '';
+    return `<button type="button" class="pos-v2-cat-pill${active}" onclick="setPosCategory('${esc(cat)}')">${esc(label)}</button>`;
+  }).join('');
+
+  html += `<button type="button" class="pos-v2-add-cat-pill" onclick="quickAddCategoryModal()" title="إضافة تصنيف جديد">+ تصنيف</button>`;
+
+  pillsRoot.innerHTML = html;
+}
+
+function renderProducts() {
+  const root = document.getElementById('products');
+  if (!root || typeof products === 'undefined') return;
+  
+  renderCategoryPills();
+
+  const q = (document.getElementById('posSearch')?.value || '').trim().toLowerCase();
+  
+  const list = products.filter(p => {
+    const matchesQuery = !q || `${p.name} ${p.barcode} ${p.cat || ''}`.toLowerCase().includes(q);
+    const matchesCat = currentPosCat === 'all' || (p.cat || '').trim() === currentPosCat;
+    return matchesQuery && matchesCat;
+  });
+
+  if (!list.length) {
+    root.innerHTML = '<div class="empty" style="grid-column: 1 / -1; padding: 50px 20px; text-align: center; color: #94a3b8; font-size: 15px; font-weight: 700;">لا توجد أصناف مطابقة للبحث أو التصنيف</div>';
+    return;
+  }
+
+  root.innerHTML = list.map(p => {
+    const isOut = p.qty < 1;
+    const isLow = p.qty > 0 && p.qty <= (p.min || 5);
+    
+    let stockBadgeHtml = '';
+    if (isOut) {
+      stockBadgeHtml = `<span class="pos-v2-stock-tag out-stock">نفد المخزون</span>`;
+    } else if (isLow) {
+      stockBadgeHtml = `<span class="pos-v2-stock-tag low-stock">مخزون منخفض: <b>${p.qty} ${esc(p.unit)}</b></span>`;
+    } else {
+      stockBadgeHtml = `<span class="pos-v2-stock-tag in-stock">المخزون المتاح: <b>${p.qty} ${esc(p.unit)}</b></span>`;
+    }
+
+    const imageHtml = p.image 
+      ? `<img class="pos-v2-card-img" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">` 
+      : `<div class="pos-v2-card-placeholder">⚡</div>`;
+
+    return `
+      <div class="pos-v2-card${isOut ? ' is-empty' : ''}" onclick="${isOut ? '' : `addCart(${p.id})`}" title="${esc(p.name)}">
+        <div class="pos-v2-card-media">
+          ${imageHtml}
+          <div class="pos-v2-price-tag">${money(p.sell)}</div>
+        </div>
+        <div class="pos-v2-card-body">
+          <h3 class="pos-v2-product-title">${esc(p.name)}</h3>
+          ${stockBadgeHtml}
+          <button type="button" class="pos-v2-add-btn" ${isOut ? 'disabled' : ''}>+ إضافة للطلب</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function saveProduct() { addProduct(); }
 </script>
 <script src="app.js"></script>
 <script src="returns.js"></script>

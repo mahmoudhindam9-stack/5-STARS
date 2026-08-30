@@ -1,7 +1,9 @@
 {
   "name": "Five Stars POS",
   "description": "A point-of-sale system for electrical supplies imported from GitHub.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "camera"
+  ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
