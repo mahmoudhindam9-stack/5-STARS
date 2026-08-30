@@ -17,3 +17,5 @@ POS and inventory management system for Five Stars electrical supplies store.
 
 ## Deployment
 Static frontend deployment on Vercel. No Express server is required.
+
+<!-- deployment-refresh: framework preset is Other -->
