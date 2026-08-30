@@ -7,6 +7,7 @@
   const read = (k,d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') ?? d; } catch { return d; } };
 
   const RETURN_KEY = 'fs_returns';
+  const getSales = () => (window.sales || read('fs_sales', []));
   let returns = read(RETURN_KEY, []);
   let selectedReturnSaleId = null;
   let imageDraft = '';
@@ -37,7 +38,7 @@
     const tbody = $('salesReturnsTable');
     if (!tbody) return;
     const q = ($('returnsSearch')?.value || '').trim().toLowerCase();
-    const list = (sales || []).filter(s => `${s.invoiceNo || s.id} ${customerLabel(s.customer)}`.toLowerCase().includes(q));
+    const list = getSales().filter(s => `${s.invoiceNo || s.id} ${customerLabel(s.customer)}`.toLowerCase().includes(q));
     tbody.innerHTML = list.map(s => {
       const amount = returns.filter(r => sid(r.saleId) === sid(s)).reduce((n,r) => n + (+r.total || 0), 0);
       const full = (s.items || []).length > 0 && (s.items || []).every(i => returnedQty(s.id, i.id) >= (+i.qty || 0));
@@ -48,7 +49,7 @@
 
   function openReturnModal(id) {
     if (typeof requireRole === 'function' && !requireRole(['مدير','حسابات'])) return;
-    const sale = (sales || []).find(s => sid(s) === String(id));
+    const sale = getSales().find(s => sid(s) === String(id));
     if (!sale) return;
     selectedReturnSaleId = sale.id;
     const html = `<div class="panel" style="box-shadow:none;padding:0"><p><b>الفاتورة:</b> ${esc(sale.invoiceNo || sale.id)} — <b>العميل:</b> ${esc(customerLabel(sale.customer))}</p><div class="table-wrap"><table class="table"><thead><tr><th>الصنف</th><th>المباع</th><th>تم رده</th><th>المتاح</th><th>السعر</th><th>المرتجع</th></tr></thead><tbody>${(sale.items || []).map(i => { const done=returnedQty(sale.id,i.id); const available=Math.max(0,(+i.qty||0)-done); return `<tr><td>${esc(i.name)}</td><td>${i.qty}</td><td>${done}</td><td>${available}</td><td>${money(i.sell)}</td><td><input class="input return-qty" data-pid="${esc(i.id)}" data-price="${+i.sell||0}" data-cost="${+i.buy||0}" data-max="${available}" type="number" min="0" max="${available}" value="0" style="width:90px" ${available===0?'disabled':''}></td></tr>`; }).join('')}</tbody></table></div><div class="actions"><button class="btn primary" onclick="processReturn('${esc(sale.id)}')">تنفيذ المرتجع</button><button class="btn secondary" onclick="closeModal()">إلغاء</button></div><p class="muted">المرتجع يعيد الكميات للمخزن ويعكس قيمة البيع والربح، ويخفض مديونية العميل إذا كانت الفاتورة آجلة.</p></div>`;
@@ -57,7 +58,7 @@
 
   function processReturn(id) {
     if (typeof requireRole === 'function' && !requireRole(['مدير','حسابات'])) return;
-    const sale = (sales || []).find(s => sid(s) === String(id));
+    const sale = getSales().find(s => sid(s) === String(id));
     if (!sale) return;
     const inputs = [...document.querySelectorAll('.return-qty')];
     const items = inputs.map(input => ({ productId:input.dataset.pid, qty:Math.min(Math.max(0,+input.value||0),+input.dataset.max||0), sell:+input.dataset.price||0, buy:+input.dataset.cost||0 })).filter(x=>x.qty>0);
@@ -156,13 +157,26 @@
     return p?.image ? `<img src="${p.image}" alt="${esc(p.name)}" loading="lazy" style="width:100%;height:88px;object-fit:cover;border-radius:12px;margin-bottom:8px;border:1px solid #e5e7eb">` : `<div style="height:88px;border-radius:12px;background:#f8fafc;display:grid;place-items:center;margin-bottom:8px;color:#94a3b8;font-size:28px">⚡</div>`;
   }
   function patchProductRendering() {
-    const originalRenderProducts=window.renderProducts;
-    window.renderProducts=function(){
-      const root=$('products'); if(!root) return;
-      const q=($('posSearch')?.value||'').trim().toLowerCase();
-      const list=(products||[]).filter(p=>(`${p.name||''} ${p.barcode||''} ${p.cat||''}`).toLowerCase().includes(q));
-      root.innerHTML=list.map(p=>`<button class="product" onclick="addCart('${esc(p.id)}')">${productImage(p)}<b>${esc(p.name)}</b><div class="muted">${esc(p.cat||'عام')} • ${esc(p.barcode||'')}</div><div class="price">${(+p.sell||0).toFixed(2)} ج</div><div class="muted">المتاح: ${+p.qty||0} ${esc(p.unit||'قطعة')}</div></button>`).join('') || '<div class="empty">لا توجد أصناف</div>';
-      if(typeof originalRenderProducts==='function' && !(products||[]).length) originalRenderProducts();
+    window.renderProducts = function() {
+      const root = $('products'); if (!root) return;
+      if (typeof renderCategoryPills === 'function') renderCategoryPills();
+      const q = ($('posSearch')?.value || '').trim().toLowerCase();
+      const cat = typeof currentPosCat !== 'undefined' ? currentPosCat : 'all';
+      const list = (products || []).filter(p => {
+        const matchesQ = !q || `${p.name || ''} ${p.barcode || ''} ${p.cat || ''}`.toLowerCase().includes(q);
+        const matchesCat = cat === 'all' || (p.cat || '').trim() === cat;
+        return matchesQ && matchesCat;
+      });
+      if (!list.length) {
+        root.innerHTML = '<div class="empty" style="grid-column:1/-1;padding:50px 20px;text-align:center;color:#94a3b8;font-size:15px;font-weight:700">لا توجد أصناف مطابقة للبحث أو التصنيف</div>';
+        return;
+      }
+      root.innerHTML = list.map(p => {
+        const isOut = p.qty < 1;
+        const imageHtml = p.image ? `<img class="pos-v2-card-img" src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">` : `<div class="pos-v2-card-placeholder">⚡</div>`;
+        const stock = isOut ? `<span class="pos-v2-stock-tag out-stock">نفد المخزون</span>` : (p.qty <= (p.min || 5) ? `<span class="pos-v2-stock-tag low-stock">مخزون منخفض: <b>${p.qty} ${esc(p.unit)}</b></span>` : `<span class="pos-v2-stock-tag in-stock">المخزون المتاح: <b>${p.qty} ${esc(p.unit)}</b></span>`);
+        return `<div class="pos-v2-card${isOut ? ' is-empty' : ''}" onclick="${isOut ? '' : `addCart(${p.id})`}" title="${esc(p.name)}"><div class="pos-v2-card-media">${imageHtml}<div class="pos-v2-price-tag">${money(p.sell)}</div></div><div class="pos-v2-card-body"><h3 class="pos-v2-product-title">${esc(p.name)}</h3>${stock}<button type="button" class="pos-v2-add-btn" ${isOut ? 'disabled' : ''}>+ إضافة للطلب</button></div></div>`;
+      }).join('');
     };
   }
 
@@ -255,8 +269,8 @@
   };
 
   window.printReport = function(){
-    const rows=(sales||[]).slice(0,100).map(s=>`<tr><td>${esc(s.invoiceNo||s.id)}</td><td>${esc(String(s.date||''))}</td><td>${esc(customerLabel(s.customer))}</td><td>${money(s.total)}</td></tr>`).join('');
-    const retTotal=returns.reduce((n,r)=>n+(+r.total||0),0), salesTotal=(sales||[]).reduce((n,s)=>n+(+s.total||0),0), net=salesTotal-retTotal;
+    const rows=getSales().slice(0,100).map(s=>`<tr><td>${esc(s.invoiceNo||s.id)}</td><td>${esc(String(s.date||''))}</td><td>${esc(customerLabel(s.customer))}</td><td>${money(s.total)}</td></tr>`).join('');
+    const retTotal=returns.reduce((n,r)=>n+(+r.total||0),0), salesTotal=getSales().reduce((n,s)=>n+(+s.total||0),0), net=salesTotal-retTotal;
     const html=`<div style="direction:rtl;font-family:Tahoma,Arial,sans-serif;color:#111"><h1>تقرير مبيعات Five Stars</h1><p>إجمالي المبيعات: <b>${money(salesTotal)}</b> — إجمالي المرتجعات: <b>${money(retTotal)}</b> — صافي المبيعات: <b>${money(net)}</b></p><table style="width:100%;border-collapse:collapse"><thead><tr><th style="text-align:right">الفاتورة</th><th>التاريخ</th><th>العميل</th><th>الإجمالي</th></tr></thead><tbody>${rows}</tbody></table></div>`;
     const w=window.open('', '_blank', 'width=1000,height=800');
     if(!w){toast('اسمح بالنوافذ المنبثقة للطباعة');return;}

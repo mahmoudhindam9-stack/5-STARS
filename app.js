@@ -64,7 +64,15 @@ let categories = read(K.cat, null);
 if (!Array.isArray(categories) || categories.length === 0) {
   categories = [...defaultCategories];
 }
+function syncCategories() {
+  const used = products.map(p => (p.cat || 'عام').trim()).filter(Boolean);
+  const combined = Array.from(new Set([...defaultCategories, ...categories, ...used]));
+  categories = combined;
+  localStorage.setItem(K.cat, JSON.stringify(categories));
+}
+syncCategories();
 let sales = read(K.s, []);
+window.sales = sales;
 let expenses = read(K.e, []);
 let users = read(K.u, [{ id: 1, name: 'admin', role: 'مدير', pass: 'FiveStars@2026' }]);
 let heldCarts = read(K.h, []);
@@ -123,7 +131,7 @@ function datePart(v) {
 function sum(arr, fn) { return arr.reduce((a, x) => a + (+fn(x) || 0), 0); }
 function customerName(id) { return customers.find(c => String(c.id) === String(id))?.name || 'عميل نقدي'; }
 function userName(id) { return users.find(u => String(u.id) === String(id))?.name || '-'; }
-function currentSession() { try { return JSON.parse(sessionStorage.getItem('fs_session') || 'null'); } catch { return null; } }
+function currentSession() { try { return JSON.parse(localStorage.getItem('fs_session') || sessionStorage.getItem('fs_session') || 'null'); } catch { return null; } }
 function requireRole(roles, silent = false) {
   const s = currentSession();
   const ok = s && roles.includes(s.role);
@@ -148,15 +156,24 @@ function showHelp() {
 
 function login() {
   const n = $('loginUser').value.trim(), p = $('loginPass').value;
+  const remember = $('loginRemember')?.checked;
   const u = users.find(x => x.name === n && x.pass === p);
   if (!u) { $('loginError').textContent = 'اسم المستخدم أو كلمة المرور غير صحيحة'; return; }
   const session = { id:u.id, name:u.name, role:u.role, loginAt:new Date().toISOString() };
-  sessionStorage.setItem('fs_session', JSON.stringify(session));
+  if (remember) {
+    localStorage.setItem('fs_session', JSON.stringify(session));
+    localStorage.setItem('fs_remember_user', n);
+    sessionStorage.removeItem('fs_session');
+  } else {
+    sessionStorage.setItem('fs_session', JSON.stringify(session));
+    localStorage.removeItem('fs_session');
+    localStorage.removeItem('fs_remember_user');
+  }
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
   setCurrentUser(); applyRole(u.role); renderAll(); setTimeout(() => $('posBarcode')?.focus(), 50);
   $('loginError').textContent = '';
 }
-function logout() { sessionStorage.removeItem('fs_session'); location.reload(); }
+function logout() { sessionStorage.removeItem('fs_session'); localStorage.removeItem('fs_session'); location.reload(); }
 function setCurrentUser() {
   const s = currentSession(); if (!s) return;
   const label = `${s.name} • ${s.role}`;
@@ -215,7 +232,10 @@ function qty(id, d) {
   renderCart();
 }
 function removeCart(id) { cart = cart.filter(i => String(i.id) !== String(id)); renderCart(); }
-function clearCart() { cart = []; renderCart(); $('posBarcode')?.focus(); }
+function clearCart() {
+  if (cart.length > 0 && !confirm('هل أنت متأكد من تفريغ سلة المشتريات؟')) return;
+  cart = []; renderCart(); $('posBarcode')?.focus();
+}
 function cartTotals() {
   const subtotal = sum(cart, x => { const p=products.find(p=>String(p.id)===String(x.id)); return p ? p.sell * x.qty : 0; });
   const discount = Math.min(Math.max(0, +($('cartDiscount')?.value || 0)), subtotal);
@@ -349,7 +369,7 @@ function ensureCategoryExists(catName) {
   if (!c || c === 'all' || c === 'الكل') return;
   if (!categories.includes(c)) {
     categories.push(c);
-    saveAll();
+    syncCategories();
   }
 }
 
@@ -1465,8 +1485,11 @@ function editCustomer(id){
 function updateCustomer(id){const c=customers.find(x=>String(x.id)===String(id));if(!c)return;Object.assign(c,{name:$('mcName').value.trim(),phone:$('mcPhone').value.trim(),address:$('mcAddress').value.trim()});saveAll();closeModal();renderAll();}
 function delCustomer(id){
   if(!requireRole(['مدير'])) return;
+  const c = customers.find(x => String(x.id) === String(id));
+  if(!c) return;
   if(sales.some(s=>String(s.customer)===String(id))) return toast('لا يمكن حذف عميل له فواتير؛ عدّل بياناته بدلًا من الحذف');
-  customers=customers.filter(c=>String(c.id)!==String(id)); saveAll(); renderAll();
+  if(!confirm(`هل أنت متأكد من حذف العميل "${c.name}"؟`)) return;
+  customers=customers.filter(c=>String(c.id)!==String(id)); saveAll(); renderAll(); toast('تم حذف العميل');
 }
 function customerStatement(id){
   const c=customers.find(x=>String(x.id)===String(id)); if(!c)return;
@@ -1593,6 +1616,106 @@ function renderDashboard(){
   if($('dashSales'))$('dashSales').textContent=money(s); if($('dashProfit'))$('dashProfit').textContent=money(p); if($('dashLow'))$('dashLow').textContent=low; if($('dashDebt'))$('dashDebt').textContent=money(debt);
   const recent=$('dashRecent'); if(recent) recent.innerHTML=ss.slice(0,8).map(x=>`<div class="toolbar" style="padding:8px 0;border-bottom:1px solid #eee"><span style="flex:1"><b>${esc(x.invoiceNo)}</b><small class="muted"> ${esc(customerName(x.customer))}</small></span><b>${money(x.total)}</b></div>`).join('')||'<div class="empty">لا توجد مبيعات اليوم</div>';
   const alerts=$('dashAlerts'); if(alerts) alerts.innerHTML=products.filter(x=>x.qty<=x.min).slice(0,10).map(x=>`<div class="toolbar" style="padding:8px 0;border-bottom:1px solid #eee"><span style="flex:1">${esc(x.name)}</span><b class="low">${x.qty} ${esc(x.unit)}</b></div>`).join('')||'<div class="empty">لا توجد تنبيهات</div>';
+  renderShiftWidget();
+}
+
+function getActiveShift() {
+  try { return JSON.parse(localStorage.getItem('fs_active_shift') || 'null'); } catch { return null; }
+}
+
+function renderShiftWidget() {
+  const badge = $('shiftStatusBadge');
+  const actionBtn = $('shiftActionBtn');
+  const shift = getActiveShift();
+  if (!badge || !actionBtn) return;
+  if (shift) {
+    badge.innerHTML = `🟢 شيفت مفتوح: <b>${esc(shift.userName)}</b> (بدأ: ${new Date(shift.startedAt).toLocaleTimeString('ar-EG')})`;
+    actionBtn.textContent = 'إنهاء الشيفت وترحيل النقدية';
+    actionBtn.style.background = '#991b1b';
+    actionBtn.style.color = '#fff';
+  } else {
+    badge.innerHTML = `🔴 لا يوجد شيفت مفتوح حالياً`;
+    actionBtn.textContent = 'فتح شيفت جديد';
+    actionBtn.style.background = '#2563eb';
+    actionBtn.style.color = '#fff';
+  }
+}
+
+function openShiftModal() {
+  const shift = getActiveShift();
+  const s = currentSession();
+  const today = todayKey();
+  const todaySales = sales.filter(x => datePart(x.date) === today);
+  const totalCash = sum(todaySales, x => x.payment !== 'آجل' ? x.total : 0);
+
+  if (!shift) {
+    openModal('فتح شيفت جديد للكاشير', `
+      <div class="form">
+        <p class="muted">بدء شيفت عمل جديد وتسجيل النقدية الافتتاحية في الدرج.</p>
+        <label>المسؤول / الكاشير<input id="shiftUser" class="input" value="${esc(s?.name || 'مدير النظام')}"></label>
+        <label>النقدية الافتتاحية بالدرج (ج)<input id="shiftStartCash" class="input" type="number" min="0" step="0.01" value="0"></label>
+        <button class="btn primary wide" onclick="confirmOpenShift()">فتح الشيفت الآن</button>
+      </div>
+    `);
+  } else {
+    openModal('إنهاء الشيفت وترحيل النقدية', `
+      <div class="form">
+        <p class="muted">تم فتح الشيفت بواسطة: <b>${esc(shift.userName)}</b> في ${new Date(shift.startedAt).toLocaleTimeString('ar-EG')}</p>
+        <div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #cbd5e1;font-size:13.5px;display:flex;flex-direction:column;gap:6px">
+          <div>النقدية الافتتاحية: <b>${money(shift.startCash)}</b></div>
+          <div>مبيعات النقدية اليوم: <b>${money(totalCash)}</b></div>
+          <div>إجمالي النقدية المتوقعة بالدرج: <b style="color:#059669">${money(shift.startCash + totalCash)}</b></div>
+        </div>
+        <label>طريقة وترحيل النقدية<select id="shiftTransferTarget" class="input">
+          <option value="safe">ترحيل الخزينة الرئيسية (الخزنة)</option>
+          <option value="bank">ترحيل إلى حساب البنك / الحساب الجاري</option>
+          <option value="keep">الاحتفاظ بالعهدة مع مسؤول الوردية القادمة</option>
+        </select></label>
+        <label>النقدية الفعلية الموجودة بالعد الفعلي (ج)<input id="shiftActualCash" class="input" type="number" min="0" step="0.01" value="${shift.startCash + totalCash}"></label>
+        <label>ملاحظات إغلاق الشيفت<input id="shiftCloseNotes" class="input" placeholder="أي فوارق أو ملاحظات..."></label>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn danger wide" onclick="confirmCloseShift()">تأكيد إنهاء الشيفت وترحيل النقدية</button>
+        </div>
+      </div>
+    `);
+  }
+}
+
+function confirmOpenShift() {
+  const userName = $('shiftUser')?.value.trim() || 'مدير النظام';
+  const startCash = +($('shiftStartCash')?.value || 0);
+  const shift = { id: Date.now(), userName, startCash, startedAt: new Date().toISOString() };
+  localStorage.setItem('fs_active_shift', JSON.stringify(shift));
+  closeModal();
+  renderShiftWidget();
+  toast('تم فتح الشيفت بنجاح');
+}
+
+function confirmCloseShift() {
+  const shift = getActiveShift();
+  if (!shift) return;
+  const target = $('shiftTransferTarget')?.value || 'safe';
+  const actualCash = +($('shiftActualCash')?.value || 0);
+  const notes = $('shiftCloseNotes')?.value.trim() || '';
+
+  const today = todayKey();
+  const todaySales = sales.filter(x => datePart(x.date) === today);
+  const totalCash = sum(todaySales, x => x.payment !== 'آجل' ? x.total : 0);
+  const expectedCash = shift.startCash + totalCash;
+  const diff = actualCash - expectedCash;
+
+  if (!confirm(`هل أنت متأكد من إنهاء الشيفت وترحيل مبلغ ${money(actualCash)} (${target === 'safe' ? 'الخزينة الرئيسية' : target === 'bank' ? 'البنك' : 'عهدة جديدة'})؟`)) return;
+
+  const closedShift = { ...shift, closedAt: new Date().toISOString(), expectedCash, actualCash, diff, target, notes };
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('fs_shift_history') || '[]'); } catch {}
+  history.unshift(closedShift);
+  localStorage.setItem('fs_shift_history', JSON.stringify(history));
+
+  localStorage.removeItem('fs_active_shift');
+  closeModal();
+  renderShiftWidget();
+  toast(`تم إنهاء الشيفت وترحيل النقدية بنجاح (الفارق: ${money(diff)})`);
 }
 function renderReports(){
   const s=sales, revenue=sum(s,x=>x.total), profit=sum(s,x=>x.total-x.cost)-sum(expenses,x=>x.amount), invoices=s.length, avg=invoices?revenue/invoices:0;
@@ -1627,6 +1750,24 @@ function resetDemo(){
   if(!requireRole(['مدير'])) return;
   if(!confirm('سيتم حذف بيانات المبيعات والعملاء والمصروفات وإرجاع الأصناف التجريبية. هل أنت متأكد؟'))return;
   products=normalizeProducts(null); categories=[...defaultCategories]; customers=[]; suppliers=[...initialSupplierSeed]; sales=[]; expenses=[]; heldCarts=[]; movements=[]; receipts=[]; saveAll(); cart=[]; renderAll(); toast('تمت إعادة بيانات التجربة');
+}
+function wipeAllData(){
+  if(!requireRole(['مدير'])) return;
+  if(!confirm('تحذير خطير: سيتم مسح جميع البيانات نهائياً (الأصناف، العملاء، الموردين، المبيعات، المصروفات، المرتجعات) وجعل التطبيق فارغاً تماماً (صفر). هل أنت متأكد؟')) return;
+  products = [];
+  categories = [...defaultCategories];
+  customers = [];
+  suppliers = [];
+  sales = [];
+  expenses = [];
+  heldCarts = [];
+  movements = [];
+  receipts = [];
+  localStorage.removeItem('fs_returns');
+  saveAll();
+  cart = [];
+  renderAll();
+  toast('تم مسح جميع البيانات وبدء التطبيق من الصفر بنجاح');
 }
 function saveSettings(){
   if(!requireRole(['مدير'])) return;
@@ -1672,7 +1813,9 @@ function updateUser(id){
   const u=users.find(x=>String(x.id)===String(id));if(!u)return;const n=$('muName').value.trim();if(!n)return toast('اسم المستخدم مطلوب');if(users.some(x=>String(x.id)!==String(id)&&x.name===n))return toast('اسم المستخدم مستخدم');u.name=n;u.role=$('muRole').value;if($('muPass').value)u.pass=$('muPass').value;saveAll();closeModal();renderUsers();setCurrentUser();toast('تم تحديث المستخدم');
 }
 function delUser(id){
-  if(!requireRole(['مدير']))return; const s=currentSession(); if(String(id)===String(s?.id))return toast('لا يمكنك حذف المستخدم الحالي'); const u=users.find(x=>String(x.id)===String(id)); if(u?.name==='admin')return toast('لا يمكن حذف مدير النظام الأساسي'); users=users.filter(x=>String(x.id)!==String(id)); saveAll(); renderUsers();
+  if(!requireRole(['مدير']))return; const s=currentSession(); if(String(id)===String(s?.id))return toast('لا يمكنك حذف المستخدم الحالي'); const u=users.find(x=>String(x.id)===String(id)); if(!u)return; if(u?.name==='admin')return toast('لا يمكن حذف مدير النظام الأساسي');
+  if(!confirm(`هل أنت متأكد من حذف المستخدم "${u.name}"؟`)) return;
+  users=users.filter(x=>String(x.id)!==String(id)); saveAll(); renderUsers(); toast('تم حذف المستخدم');
 }
 function renderUsers(){
   const root=$('userTable');if(!root)return;
@@ -1707,6 +1850,12 @@ window.addEventListener('keydown',e=>{
   else if(e.key==='Escape' && !$('cameraModal')?.classList.contains('hidden')) stopCamera();
 });
 navInit();
+const rememberedUser = localStorage.getItem('fs_remember_user');
+if (rememberedUser && $('loginUser')) {
+  $('loginUser').value = rememberedUser;
+  if ($('loginRemember')) $('loginRemember').checked = true;
+}
+
 const session=currentSession();
 if(session){const u=users.find(x=>String(x.id)===String(session.id));if(u){$('login').classList.add('hidden');$('app').classList.remove('hidden');setCurrentUser();applyRole(u.role);}}
 renderAll();
