@@ -1,0 +1,36 @@
+name: Cleanup Legacy Sync
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove legacy sync scripts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n', '')
+          text = text.replace('  <script src="sync-v2.js"></script>\n', '')
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then exit 0; fi
+          git add index.html
+          git commit -m "chore: remove duplicate legacy sync"
+          git push
