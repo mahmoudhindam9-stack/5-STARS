@@ -5,7 +5,8 @@
   "main": "electron/main.js",
   "scripts": {
     "build": "echo Static app ready",
-    "start": "electron .",
+    "start": "node server.js",
+    "electron": "electron .",
     "dist": "electron-builder --win nsis --publish never"
   },
   "devDependencies": {
