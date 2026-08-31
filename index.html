@@ -11,11 +11,11 @@
 </head>
 <body>
 <div id="login" class="login">
-  <div class="login-card"><div class="logo">★</div><div class="brand">Five Stars<small>Electrical Supplies</small></div><h2>تسجيل الدخول</h2><p class="muted">نظام إدارة ومبيعات محل الأدوات الكهربائية</p><input id="loginUser" class="input" placeholder="اسم المستخدم" autocomplete="username"><input id="loginPass" class="input" type="password" placeholder="كلمة المرور" autocomplete="current-password"><label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin:10px 0;color:#334155;font-weight:600;"><input type="checkbox" id="loginRemember" style="width:16px;height:16px;accent-color:#2563eb;cursor:pointer;"> تذكرني</label><button class="btn primary full" onclick="login()">دخول إلى النظام</button><div id="loginError" class="login-error"></div></div>
+  <div class="login-card"><div class="logo-stars" style="font-size:24px;color:#f59e0b;letter-spacing:2px;margin-bottom:6px;filter:drop-shadow(0 2px 4px rgba(245,158,11,0.3));">★★★★★</div><div class="brand">Five Stars<small>Electrical Supplies</small></div><h2>تسجيل الدخول</h2><p class="muted">نظام إدارة ومبيعات محل الأدوات الكهربائية</p><input id="loginUser" class="input" placeholder="اسم المستخدم" autocomplete="username"><input id="loginPass" class="input" type="password" placeholder="كلمة المرور" autocomplete="current-password"><label style="display:flex;align-items:center;gap:8px;font-size:13.5px;cursor:pointer;margin:10px 0;color:#334155;font-weight:600;"><input type="checkbox" id="loginRemember" style="width:16px;height:16px;accent-color:#2563eb;cursor:pointer;"> تذكرني</label><button class="btn primary full" onclick="login()">دخول إلى النظام</button><div id="loginError" class="login-error"></div></div>
 </div>
 <div id="app" class="app hidden">
   <header class="app-navbar">
-    <div class="app-nav-brand"><div class="app-logo">★</div><div class="app-brand-info"><b>Five Stars</b><small>Electrical Supplies</small></div></div>
+    <div class="app-nav-brand"><div class="app-logo" style="font-size:10px;color:#f59e0b;letter-spacing:-1px;padding:0 6px;">★★★★★</div><div class="app-brand-info"><b>Five Stars</b><small>Electrical Supplies</small></div></div>
     <nav class="nav">
       <button data-page="dashboard" class="active"><span class="icon">▦</span> <span class="text">لوحة التحكم</span></button>
       <button data-page="pos"><span class="icon">🛒</span> <span class="text">الكاشير</span></button>
@@ -42,7 +42,7 @@
     <section id="settings" class="page hidden"><div class="grid"><div class="panel"><h2>الإعدادات</h2><label>اسم المحل<input id="shopName" class="input" value="Five Stars"></label><label>العملة<input id="currency" class="input" value="ج"></label><button class="btn primary" onclick="saveSettings()">حفظ الإعدادات</button></div><div class="panel"><h2>البيانات</h2><p class="muted">استخدم النسخ الاحتياطي لحفظ البيانات أو نقلها بين الأجهزة.</p><div class="actions"><button class="btn secondary" onclick="exportBackup()">تصدير نسخة احتياطية</button><label class="btn secondary file-btn">استيراد نسخة احتياطية<input type="file" accept="application/json" onchange="importBackup(event)"></label><button class="btn danger" onclick="resetDemo()">إرجاع بيانات التجربة</button><button class="btn danger" onclick="wipeAllData()" style="background:#991b1b">مسح جميع البيانات (صفر)</button></div></div></div></section>
   </main>
 </div>
-<div id="cameraModal" class="camera-modal hidden"><div class="camera-box"><div class="toolbar"><div style="flex:1"><h3>مسح الباركود بالكاميرا</h3><span id="cameraStatus" class="muted">جاري تشغيل الكاميرا...</span></div><button class="btn secondary" onclick="stopCamera()">إغلاق</button></div><video id="scannerVideo" autoplay muted playsinline></video></div></div>
+<div id="cameraModal" class="camera-modal hidden"><div class="camera-box"><div class="toolbar"><div style="flex:1"><h3>مسح الباركود بالكاميرا</h3><span id="cameraStatus" class="muted">الكاميرا تستخدم لمسح الباركود فقط</span></div><button class="btn secondary" onclick="stopCamera()">إغلاق</button></div><video id="scannerVideo" autoplay muted playsinline></video><p style="margin:10px 0 0;font-size:12px;color:#64748b;text-align:center">ملاحظة: لا تطلب صلاحيات الكاميرا عند دخول التطبيق، وتُستخدم الكاميرا حصرياً لمسح الباركود عند الضغط على زر الماسح.</p></div></div>
 <div id="modalRoot"></div><div id="toast" class="toast"></div>
 <script>
 let currentPosCat = 'all';

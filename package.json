@@ -1,48 +1,12 @@
 {
   "name": "five-stars-pos",
   "version": "1.0.0",
-  "description": "Five Stars POS - Windows desktop application",
-  "main": "electron/main.js",
-  "author": "Five Stars",
-  "license": "UNLICENSED",
+  "description": "Five Stars Electrical Supplies POS System",
   "scripts": {
-    "start": "electron .",
-    "dist": "electron-builder --win nsis"
+    "build": "echo 'Static app ready'",
+    "start": "node server.js"
   },
-  "devDependencies": {
-    "electron": "43.4.0",
-    "electron-builder": "26.15.3"
-  },
-  "build": {
-    "appId": "com.fivestars.pos",
-    "productName": "Five Stars",
-    "asar": true,
-    "compression": "maximum",
-    "files": [
-      "electron/**/*",
-      "*.html",
-      "*.js",
-      "*.css",
-      "*.json",
-      "*.txt"
-    ],
-    "directories": {
-      "output": "dist-installer"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "electron/icon.ico",
-      "artifactName": "Five Stars SETUP.exe"
-    },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": true,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": "always",
-      "createStartMenuShortcut": true,
-      "shortcutName": "Five Stars",
-      "uninstallDisplayName": "Five Stars UNINSTALL",
-      "menuCategory": "Five Stars"
-    }
+  "dependencies": {
+    "express": "^4.19.2"
   }
 }
