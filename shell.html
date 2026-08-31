@@ -12,6 +12,24 @@
 <div id="syncStatus">بدء المزامنة…</div>
 <iframe id="appFrame" title="Five Stars"></iframe>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// First-run admin bootstrap: default password is 123456, then the user can change it from the app.
+(function(){
+  try {
+    const flag='fs_admin_default_password_initialized_v1';
+    if(!localStorage.getItem(flag)){
+      let users=[];
+      try { users=JSON.parse(localStorage.getItem('fs_users')||'[]')||[]; } catch(e) { users=[]; }
+      if(!Array.isArray(users)) users=[];
+      const admin=users.find(u=>String(u.name||'').toLowerCase()==='admin');
+      if(admin) admin.pass='123456';
+      else users.unshift({id:1,name:'admin',role:'مدير',pass:'123456'});
+      localStorage.setItem('fs_users',JSON.stringify(users));
+      localStorage.setItem(flag,'1');
+    }
+  } catch(e) { console.warn('[Five Stars Admin Bootstrap]',e); }
+})();
+</script>
 <script src="shell-sync-v2.js"></script>
 <script>
 (async()=>{
