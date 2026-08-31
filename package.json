@@ -1,6 +1,6 @@
 {
   "name": "five-stars-pos",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Five Stars Electrical Supplies POS System",
   "main": "electron/main.js",
   "scripts": {
@@ -12,9 +12,6 @@
   "devDependencies": {
     "electron": "43.4.0",
     "electron-builder": "26.15.3"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
   },
   "build": {
     "appId": "com.fivestars.pos",
@@ -38,7 +35,8 @@
       "metadata.json"
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }]
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "electron/icon.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -49,7 +47,9 @@
       "runAfterFinish": true,
       "perMachine": false,
       "deleteAppDataOnUninstall": true,
-      "uninstallDisplayName": "Five Stars - Uninstall"
+      "uninstallDisplayName": "Five Stars - Uninstall",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp"
     }
   }
 }
