@@ -1,0 +1,48 @@
+name: Enable Five Stars Sync Assets
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  inject-sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Inject Supabase and sync scripts
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          marker = '<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>'
+          sync = '<script src="sync.js"></script>'
+          changed = False
+          if marker not in text:
+              text = text.replace('</head>', f'  {marker}\n</head>', 1)
+              changed = True
+          if sync not in text:
+              text = text.replace('</body>', f'  {sync}\n</body>', 1)
+              changed = True
+          if changed:
+              p.write_text(text, encoding='utf-8')
+
+      - name: Commit injected assets
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "No sync injection needed"
+          else
+            git add index.html
+            git commit -m "chore: enable offline-first automatic sync"
+            git push
+          fi
