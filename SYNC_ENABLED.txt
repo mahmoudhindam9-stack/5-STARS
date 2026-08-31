@@ -1,0 +1,1 @@
+Five Stars is configured for offline-first automatic synchronization.
