@@ -13,6 +13,9 @@
     "electron": "43.4.0",
     "electron-builder": "26.15.3"
   },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
   "build": {
     "appId": "com.fivestars.pos",
     "productName": "Five Stars",
@@ -35,8 +38,7 @@
       "metadata.json"
     ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "icon": "electron/icon.ico"
+      "target": [{ "target": "nsis", "arch": ["x64"] }]
     },
     "nsis": {
       "oneClick": false,
@@ -47,10 +49,6 @@
       "runAfterFinish": true,
       "perMachine": false,
       "deleteAppDataOnUninstall": true,
-      "installerSidebar": "build/installerSidebar.bmp",
-      "uninstallerSidebar": "build/uninstallerSidebar.bmp",
-      "installerIcon": "electron/icon.ico",
-      "uninstallerIcon": "electron/icon.ico",
       "uninstallDisplayName": "Five Stars - Uninstall"
     }
   }

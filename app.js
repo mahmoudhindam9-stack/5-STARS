@@ -74,7 +74,7 @@ syncCategories();
 let sales = read(K.s, []);
 window.sales = sales;
 let expenses = read(K.e, []);
-let users = read(K.u, [{ id: 1, name: 'admin', role: 'مدير', pass: 'FiveStars@2026' }]);
+let users = read(K.u, [{ id: 1, name: 'admin', role: 'مدير', pass: '123456' }]);
 let heldCarts = read(K.h, []);
 let movements = read(K.m, []);
 let receipts = read(K.r, []);
@@ -108,10 +108,10 @@ function normalizeProducts(raw) {
     min: Math.max(0, +p.min || 0), unit: p.unit || 'قطعة', cat: p.cat || 'عام'
   }));
 }
-if (!users.some(u => u.name === 'admin')) users.unshift({ id:1, name:'admin', role:'مدير', pass:'FiveStars@2026' });
+if (!users.some(u => u.name === 'admin')) users.unshift({ id:1, name:'admin', role:'مدير', pass:'123456' });
 else {
   const a = users.find(u => u.name === 'admin');
-  if (!a.pass) a.pass = 'FiveStars@2026';
+  if (!a.pass || a.pass === 'FiveStars@2026') a.pass = '123456';
   if (!a.role) a.role = 'مدير';
 }
 saveAll();

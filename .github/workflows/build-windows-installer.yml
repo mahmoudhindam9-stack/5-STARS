@@ -20,13 +20,11 @@ jobs:
         with:
           node-version: 22
 
-      - name: Create Windows icon and installer artwork
+      - name: Create Windows icon
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path electron, build | Out-Null
+          New-Item -ItemType Directory -Force -Path electron | Out-Null
           magick electron/icon.svg -background none -define icon:auto-resize=256,128,64,48,32,16 electron/icon.ico
-          magick build/installer-sidebar.svg -background '#0f172a' -alpha remove -alpha off -resize 164x314 BMP3:build/installerSidebar.bmp
-          magick build/uninstaller-sidebar.svg -background '#111827' -alpha remove -alpha off -resize 164x314 BMP3:build/uninstallerSidebar.bmp
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
