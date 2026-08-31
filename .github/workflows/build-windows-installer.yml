@@ -20,6 +20,9 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path electron, build | Out-Null
           magick electron/icon.svg -background none -define icon:auto-resize=256,128,64,48,32,16 electron/icon.ico
+          magick electron/icon.svg -background none -define icon:auto-resize=256,128,64,48,32,16 electron/installerIcon.ico
+          magick electron/icon.svg -background none -define icon:auto-resize=256,128,64,48,32,16 electron/uninstallerIcon.ico
+          magick build/installer-header.svg -background '#0b1220' -alpha remove -alpha off -resize 150x57 BMP3:build/installerHeader.bmp
           magick build/installer-sidebar.svg -background '#0f172a' -alpha remove -alpha off -resize 164x314 BMP3:build/installerSidebar.bmp
           magick build/uninstaller-sidebar.svg -background '#111827' -alpha remove -alpha off -resize 164x314 BMP3:build/uninstallerSidebar.bmp
 
