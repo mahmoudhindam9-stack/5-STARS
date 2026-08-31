@@ -17,6 +17,8 @@
     "appId": "com.fivestars.pos",
     "productName": "Five Stars",
     "copyright": "Five Stars",
+    "asar": true,
+    "compression": "maximum",
     "files": [
       "electron/**/*",
       "*.html",
@@ -35,7 +37,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "electron/icon.ico",
+      "icon": "electron/icon.png",
       "artifactName": "Five Stars SETUP.exe",
       "publisherName": "Five Stars",
       "legalTrademarks": "Five Stars"
