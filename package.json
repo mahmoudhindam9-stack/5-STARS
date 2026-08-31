@@ -16,7 +16,6 @@
   "build": {
     "appId": "com.fivestars.pos",
     "productName": "Five Stars",
-    "copyright": "Five Stars",
     "asar": true,
     "compression": "maximum",
     "files": [
@@ -37,14 +36,12 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "Five Stars",
-      "uninstallerDisplayName": "Five Stars UNINSTALL",
-      "deleteAppDataOnUninstall": true,
-      "perMachine": true,
-      "runAfterFinish": true,
+      "uninstallDisplayName": "Five Stars UNINSTALL",
       "menuCategory": "Five Stars"
     }
   }
