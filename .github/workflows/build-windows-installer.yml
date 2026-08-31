@@ -20,10 +20,13 @@ jobs:
         with:
           node-version: 22
 
-      - name: Create Windows icon
+      - name: Create Windows icon and installer artwork
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force -Path electron, build | Out-Null
           magick electron/icon.svg -background none -define icon:auto-resize=256,128,64,48,32,16 electron/icon.ico
+          magick build/installer-sidebar.svg -background '#0f172a' -alpha remove -alpha off -resize 164x314 BMP3:build/installerSidebar.bmp
+          magick build/uninstaller-sidebar.svg -background '#111827' -alpha remove -alpha off -resize 164x314 BMP3:build/uninstallerSidebar.bmp
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -41,7 +44,9 @@ jobs:
             Get-ChildItem dist-installer -ErrorAction SilentlyContinue | Format-Table Name,Length
             throw 'Five Stars SETUP.exe was not generated.'
           }
+          $size = [math]::Round($setup.Length / 1MB, 2)
           Write-Host "Generated: $($setup.FullName)"
+          Write-Host "Installer size: $size MB"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
