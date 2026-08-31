@@ -13,16 +13,9 @@ POS and inventory management system for Five Stars electrical supplies store.
 - Expense tracking and account summaries
 - User roles: manager, cashier, inventory, accounting
 - JSON backup export/import
-- Offline-first local storage with automatic bidirectional Supabase synchronization
-- Windows desktop application shell with professional splash screen
-- Windows installer with Desktop shortcut and automatic uninstall cleanup
+- Local browser storage for the current standalone deployment
 
 ## Deployment
-Static frontend deployment on Vercel. The Windows version is packaged with Electron and preserves the same Five Stars application and synchronization layer locally.
-
-## Windows installer
-The GitHub Actions workflow `.github/workflows/build-installers.yml` builds an x64 installer named `Five Stars SETUP.exe` using Electron Builder. Installation creates a Desktop shortcut named `Five Stars`; the installed application registers `Five Stars UNINSTALL.exe` and removes application data on uninstall.
-
-The installer build also generates the Windows icon from `electron/icon.svg` during CI so the repository stays text/binary-friendly.
+Static frontend deployment on Vercel. No Express server is required.
 
 <!-- deployment-refresh: framework preset is Other; force Vercel redeploy -->
