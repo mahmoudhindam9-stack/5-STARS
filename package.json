@@ -1,15 +1,12 @@
 {
   "name": "five-stars-pos",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Five Stars Electrical Supplies POS System",
   "main": "electron/main.js",
   "scripts": {
     "build": "echo Static app ready",
     "start": "electron .",
     "dist": "electron-builder --win nsis --publish never"
-  },
-  "dependencies": {
-    "express": "^4.19.2"
   },
   "devDependencies": {
     "electron": "43.4.0",
@@ -20,11 +17,21 @@
     "productName": "Five Stars",
     "artifactName": "Five Stars SETUP.exe",
     "asar": true,
+    "compression": "maximum",
     "directories": { "output": "dist-installer" },
     "files": [
-      "**/*",
-      "!dist-installer{,/**/*}",
-      "!node_modules/.cache{,/**/*}"
+      "electron/**/*",
+      "index.html",
+      "app.js",
+      "accounts-print.js",
+      "returns.js",
+      "styles.css",
+      "pos.css",
+      "shell*.html",
+      "shell*.js",
+      "sync*.js",
+      "sw.js",
+      "metadata.json"
     ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
@@ -38,7 +45,12 @@
       "shortcutName": "Five Stars",
       "runAfterFinish": true,
       "perMachine": false,
-      "deleteAppDataOnUninstall": true
+      "deleteAppDataOnUninstall": true,
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/uninstallerSidebar.bmp",
+      "installerIcon": "electron/icon.ico",
+      "uninstallerIcon": "electron/icon.ico",
+      "uninstallDisplayName": "Five Stars - Uninstall"
     }
   }
 }
