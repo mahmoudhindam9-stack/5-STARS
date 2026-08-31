@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="application-name" content="Five Stars">
+<title>Five Stars</title>
+<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#f8fafc}#appFrame{border:0;width:100%;height:100%;display:block;background:#fff}#syncStatus{position:fixed;left:14px;bottom:14px;z-index:99999;font:600 12px/1.35 Arial,sans-serif;background:#0f172a;color:#fff;padding:8px 12px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.18);pointer-events:none}</style>
+</head>
+<body>
+<div id="syncStatus">بدء المزامنة…</div>
+<iframe id="appFrame" title="Five Stars"></iframe>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="shell-sync.js"></script>
+<script>
+(async()=>{
+  const frame=document.getElementById('appFrame');
+  const status=document.getElementById('syncStatus');
+  let reloading=false;
+  window.FiveStarsShell={
+    reloadApp(){if(reloading)return;reloading=true;const src='index.html?sync='+Date.now();frame.src=src;setTimeout(()=>reloading=false,1200)},
+    setStatus(t){status.textContent=t}
+  };
+  frame.src='index.html';
+  if('serviceWorker' in navigator){try{await navigator.serviceWorker.register('sw.js',{scope:'./'})}catch(e){console.warn('[Five Stars SW]',e)}}
+})();
+</script>
+</body>
+</html>
