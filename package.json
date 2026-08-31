@@ -10,15 +10,13 @@
     "dist": "electron-builder --win nsis"
   },
   "devDependencies": {
-    "electron": "^38.0.0",
-    "electron-builder": "^26.0.12"
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3"
   },
   "build": {
     "appId": "com.fivestars.pos",
     "productName": "Five Stars",
     "copyright": "Five Stars",
-    "asar": true,
-    "compression": "maximum",
     "files": [
       "electron/**/*",
       "*.html",
