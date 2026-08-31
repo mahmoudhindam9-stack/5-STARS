@@ -31,16 +31,9 @@
       "output": "dist-installer"
     },
     "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": ["x64"]
-        }
-      ],
-      "icon": "electron/icon.png",
-      "artifactName": "Five Stars SETUP.exe",
-      "publisherName": "Five Stars",
-      "legalTrademarks": "Five Stars"
+      "target": "nsis",
+      "icon": "electron/icon.ico",
+      "artifactName": "Five Stars SETUP.exe"
     },
     "nsis": {
       "oneClick": false,
@@ -48,7 +41,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Five Stars",
-      "uninstallerName": "Five Stars UNINSTALL.exe",
+      "uninstallerDisplayName": "Five Stars UNINSTALL",
       "deleteAppDataOnUninstall": true,
       "perMachine": true,
       "runAfterFinish": true,
