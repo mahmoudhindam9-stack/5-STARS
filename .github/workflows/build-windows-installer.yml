@@ -24,6 +24,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Prepare Windows icon
+        shell: pwsh
+        run: |
+          npx --yes sharp-cli -i electron/icon.svg -o electron/icon.png resize 256 256
+          if (-not (Test-Path electron/icon.png)) {
+            Write-Error 'Could not generate electron/icon.png'
+            exit 1
+          }
+
       - name: Build installer
         run: npm run dist
         env:
