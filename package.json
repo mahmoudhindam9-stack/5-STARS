@@ -1,0 +1,58 @@
+{
+  "name": "five-stars-pos",
+  "version": "1.0.0",
+  "description": "Five Stars POS - Windows desktop application",
+  "main": "electron/main.js",
+  "author": "Five Stars",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.fivestars.pos",
+    "productName": "Five Stars",
+    "copyright": "Five Stars",
+    "asar": true,
+    "compression": "maximum",
+    "files": [
+      "electron/**/*",
+      "*.html",
+      "*.js",
+      "*.css",
+      "*.json",
+      "*.txt"
+    ],
+    "directories": {
+      "output": "dist-installer"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "electron/icon.ico",
+      "artifactName": "Five Stars SETUP.exe",
+      "publisherName": "Five Stars",
+      "legalTrademarks": "Five Stars"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Five Stars",
+      "uninstallerName": "Five Stars UNINSTALL.exe",
+      "deleteAppDataOnUninstall": true,
+      "perMachine": true,
+      "runAfterFinish": true,
+      "menuCategory": "Five Stars"
+    }
+  }
+}
